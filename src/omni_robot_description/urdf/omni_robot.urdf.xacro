@@ -1,0 +1,149 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="omni_robot">
+
+  <!-- Robot dimensions -->
+  <xacro:property name="base_length" value="0.32"/>
+  <xacro:property name="base_width" value="0.28"/>
+  <xacro:property name="base_height" value="0.10"/>
+
+  <!-- Omni wheel -->
+  <xacro:property name="wheel_radius" value="0.032"/>
+  <xacro:property name="wheel_width" value="0.025"/>
+  <xacro:property name="wheel_z" value="0.0"/>
+
+  <!-- Wheel layout: front-left, front-right, rear-center -->
+  <xacro:property name="wheel_x_front" value="0.0996"/>
+  <xacro:property name="wheel_y_front" value="0.0575"/>
+  <xacro:property name="wheel_x_rear" value="-0.115"/>
+
+  <material name="blue">
+    <color rgba="0.1 0.3 0.8 1.0"/>
+  </material>
+  <material name="black">
+    <color rgba="0.05 0.05 0.05 1.0"/>
+  </material>
+  <material name="gray">
+    <color rgba="0.5 0.5 0.5 1.0"/>
+  </material>
+
+  <!-- Main chassis -->
+  <link name="base_link">
+    <visual>
+      <origin xyz="0 0 0.08"/>
+      <geometry>
+        <box size="${base_length} ${base_width} ${base_height}"/>
+      </geometry>
+      <material name="blue"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0.08"/>
+      <geometry>
+        <box size="${base_length} ${base_width} ${base_height}"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0 0 0.08"/>
+      <mass value="5.0"/>
+      <inertia ixx="0.05" ixy="0" ixz="0" iyy="0.05" iyz="0" izz="0.08"/>
+    </inertial>
+  </link>
+
+  <!--
+    Coordinate convention:
+      +X = robot front
+      +Y = robot left
+      -Y = robot right
+
+    Wheel arrangement:
+      wheel_1 = front-left
+      wheel_2 = front-right
+      wheel_3 = rear-center
+
+    The wheel axle is tangent to the wheel placement circle,
+    which is the standard physical arrangement for a 3-wheel omni robot.
+  -->
+  <xacro:macro name="wheel" params="name x y yaw">
+    <link name="${name}">
+      <visual>
+        <origin xyz="0 0 0" rpy="${pi/2} 0 0"/>
+        <geometry>
+          <cylinder radius="${wheel_radius}" length="${wheel_width}"/>
+        </geometry>
+        <material name="black"/>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="${pi/2} 0 0"/>
+        <geometry>
+          <cylinder radius="${wheel_radius}" length="${wheel_width}"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <joint name="${name}_joint" type="continuous">
+      <parent link="base_link"/>
+      <child link="${name}"/>
+      <origin xyz="${x} ${y} ${wheel_z + wheel_radius}" rpy="0 0 ${yaw}"/>
+      <axis xyz="0 1 0"/>
+    </joint>
+  </xacro:macro>
+
+  <!--
+    Wheel 1: FRONT LEFT
+    Position: +X, +Y
+    Axle tangent direction: approximately 120 deg from +X
+  -->
+  <xacro:wheel
+    name="wheel_1_front_left"
+    x="${wheel_x_front}"
+    y="${wheel_y_front}"
+    yaw="${pi/6}"/>
+
+  <!--
+    Wheel 2: FRONT RIGHT
+    Position: +X, -Y
+    Axle tangent direction: approximately -120 deg from +X
+  -->
+  <xacro:wheel
+    name="wheel_2_front_right"
+    x="${wheel_x_front}"
+    y="-${wheel_y_front}"
+    yaw="${5*pi/6}"/>
+
+  <!--
+    Wheel 3: REAR CENTER
+    Position: -X, 0
+    Axle tangent direction: +Y
+  -->
+  <xacro:wheel
+    name="wheel_3_rear"
+    x="${wheel_x_rear}"
+    y="0.0"
+    yaw="0.0"/>
+
+  <!-- LiDAR -->
+  <link name="lidar_link">
+    <visual>
+      <origin xyz="0 0 0.025"/>
+      <geometry>
+        <cylinder radius="0.035" length="0.05"/>
+      </geometry>
+      <material name="gray"/>
+    </visual>
+  </link>
+
+  <joint name="lidar_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="lidar_link"/>
+    <origin xyz="0 0 0.16" rpy="0 0 0"/>
+  </joint>
+
+  <!-- IMU -->
+  <link name="imu_link"/>
+
+  <joint name="imu_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="imu_link"/>
+    <origin xyz="0 0 0.13" rpy="0 0 0"/>
+  </joint>
+
+</robot>

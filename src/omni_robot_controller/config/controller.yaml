@@ -1,0 +1,24 @@
+omni_hardware_interface:
+  ros__parameters:
+    command_timeout: 0.5
+    max_wheel_velocity: 20.0
+    publish_rate: 50.0
+    # Real ESP32-S3/micro-ROS publishes /wheel_velocity_feedback.
+    # Keep false to avoid a second publisher on the real robot.
+    simulation_mode: false
+
+omni_kinematics_node:
+  ros__parameters:
+    wheel_radius: 0.032
+    wheel_base_radius: 0.115
+    cmd_timeout: 0.5
+    max_wheel_velocity: 20.0
+
+omni_odometry_node:
+  ros__parameters:
+    wheel_radius: 0.032
+    wheel_base_radius: 0.115
+    odom_frame: odom
+    base_frame: base_link
+    # EKF is the single owner of odom -> base_link TF.
+    publish_tf: false
